@@ -755,3 +755,23 @@ describe('deltas that are exactly "0"', function (): void {
             ->and($calls)->toBe(1);
     });
 });
+
+it('can disable thinking mode when streaming', function (): void {
+    FixtureResponse::fakeStreamResponses('chat/completions', 'deepseek/stream-basic-text');
+
+    $response = Prism::text()
+        ->using(Provider::DeepSeek, 'deepseek-chat')
+        ->withPrompt('Who are you?')
+        ->withProviderOptions(['thinking' => ['type' => 'disabled']])
+        ->asStream();
+
+    foreach ($response as $chunk) {
+        // consume stream
+    }
+
+    Http::assertSent(function (Request $request): bool {
+        expect($request->data()['thinking'])->toBe(['type' => 'disabled']);
+
+        return true;
+    });
+});

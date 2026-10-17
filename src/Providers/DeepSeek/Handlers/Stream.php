@@ -447,6 +447,8 @@ class Stream
             ], Arr::whereNotNull([
                 'temperature' => $request->temperature(),
                 'top_p' => $request->topP(),
+                'thinking' => $request->providerOptions('thinking'),
+                'reasoning_effort' => $request->providerOptions('reasoning_effort'),
                 'tools' => ToolMap::map($request->tools()) ?: null,
                 'tool_choice' => ToolChoiceMap::map($request->toolChoice()),
             ]))

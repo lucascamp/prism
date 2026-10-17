@@ -58,6 +58,8 @@ class Structured
             ], Arr::whereNotNull([
                 'temperature' => $request->temperature(),
                 'top_p' => $request->topP(),
+                'thinking' => $request->providerOptions('thinking'),
+                'reasoning_effort' => $request->providerOptions('reasoning_effort'),
                 'response_format' => ['type' => 'json_object'],
             ]))
         );

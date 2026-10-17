@@ -152,3 +152,55 @@ it('can generate text using multiple tools and multiple steps', function (): voi
     // Assert finish reason
     expect($response->finishReason)->toBe(FinishReason::Stop);
 });
+
+it('can disable thinking mode', function (): void {
+    FixtureResponse::fakeResponseSequence('v1/chat/completions', 'deepseek/generate-text-with-a-prompt');
+
+    Prism::text()
+        ->using(Provider::DeepSeek, 'deepseek-chat')
+        ->withPrompt('Who are you?')
+        ->withProviderOptions(['thinking' => ['type' => 'disabled']])
+        ->generate();
+
+    Http::assertSent(function (Request $request): bool {
+        expect($request->data()['thinking'])->toBe(['type' => 'disabled']);
+        expect($request->data())->not->toHaveKey('reasoning_effort');
+
+        return true;
+    });
+});
+
+it('can set the reasoning effort', function (): void {
+    FixtureResponse::fakeResponseSequence('v1/chat/completions', 'deepseek/generate-text-with-a-prompt');
+
+    Prism::text()
+        ->using(Provider::DeepSeek, 'deepseek-chat')
+        ->withPrompt('Who are you?')
+        ->withProviderOptions([
+            'thinking' => ['type' => 'enabled'],
+            'reasoning_effort' => 'max',
+        ])
+        ->generate();
+
+    Http::assertSent(function (Request $request): bool {
+        expect($request->data()['thinking'])->toBe(['type' => 'enabled']);
+        expect($request->data()['reasoning_effort'])->toBe('max');
+
+        return true;
+    });
+});
+
+it('does not send thinking options by default', function (): void {
+    FixtureResponse::fakeResponseSequence('v1/chat/completions', 'deepseek/generate-text-with-a-prompt');
+
+    Prism::text()
+        ->using(Provider::DeepSeek, 'deepseek-chat')
+        ->withPrompt('Who are you?')
+        ->generate();
+
+    Http::assertSent(function (Request $request): bool {
+        expect($request->data())->not->toHaveKeys(['thinking', 'reasoning_effort']);
+
+        return true;
+    });
+});

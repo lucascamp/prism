@@ -10,6 +10,34 @@
 
 ## Provider-specific options
 
+### Thinking mode
+
+DeepSeek enables thinking mode by default. You can turn it off, or tune the reasoning effort, through provider options. See the [DeepSeek thinking mode guide](https://api-docs.deepseek.com/guides/thinking_mode) for details.
+
+```php
+use Prism\Prism\Facades\Prism;
+use Prism\Prism\Enums\Provider;
+
+// Disable thinking
+$response = Prism::text()
+    ->using(Provider::DeepSeek, 'deepseek-v4-pro')
+    ->withPrompt('Who are you?')
+    ->withProviderOptions(['thinking' => ['type' => 'disabled']])
+    ->asText();
+
+// Enable thinking with a specific effort (low, high or max)
+$response = Prism::text()
+    ->using(Provider::DeepSeek, 'deepseek-v4-pro')
+    ->withPrompt('Solve this step by step...')
+    ->withProviderOptions([
+        'thinking' => ['type' => 'enabled'],
+        'reasoning_effort' => 'max',
+    ])
+    ->asText();
+```
+
+These options work for text, structured, and streaming requests. When neither option is set, nothing is sent and DeepSeek's defaults apply.
+
 ## Streaming
 
 DeepSeek supports streaming responses in real-time. All standard streaming methods are supported:

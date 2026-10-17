@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use Illuminate\Http\Client\Request;
+use Illuminate\Support\Facades\Http;
 use Prism\Prism\Enums\Provider;
 use Prism\Prism\Facades\Prism;
 use Prism\Prism\Schema\BooleanSchema;
@@ -52,4 +54,21 @@ it('returns structured output', function (): void {
     expect($response->usage->cacheReadInputTokens)->toBe(128);
     expect($response->usage->completionTokens)->toBe(26);
     expect($response->usage->thoughtTokens)->toBeNull();
+});
+
+it('can disable thinking mode for structured output', function (): void {
+    FixtureResponse::fakeResponseSequence('v1/chat/completions', 'deepseek/structured');
+
+    Prism::structured()
+        ->using(Provider::DeepSeek, 'deepseek-chat')
+        ->withSchema(new ObjectSchema('output', 'the output object', [new StringSchema('weather', 'The weather forecast')], ['weather']))
+        ->withPrompt('What is the weather?')
+        ->withProviderOptions(['thinking' => ['type' => 'disabled']])
+        ->asStructured();
+
+    Http::assertSent(function (Request $request): bool {
+        expect($request->data()['thinking'])->toBe(['type' => 'disabled']);
+
+        return true;
+    });
 });
